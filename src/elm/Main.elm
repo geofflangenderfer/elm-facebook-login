@@ -1,6 +1,6 @@
 port module Main exposing (..)
 
-import App exposing (AppModel, view)
+import App
 import Browser
 import Json.Encode as Encode exposing (Value)
 
@@ -11,11 +11,11 @@ import Json.Encode as Encode exposing (Value)
 --
 
 
-main : Program (Maybe Encode.Value) AppModel App.Msg
+main : Program (Maybe Encode.Value) App.AppModel App.Msg
 main =
     Browser.element
         { init = App.init
-        , view = view
+        , view = App.view
         , update = App.updateWithStorage
         , subscriptions = subscriptions
         }
@@ -27,7 +27,7 @@ main =
 -- this is because the port subscriptions have a function as first parameter. this means incoming data from js
 
 
-subscriptions : AppModel -> Sub App.Msg
+subscriptions : App.AppModel -> Sub App.Msg
 subscriptions model =
     Sub.batch
         [ userLoggedIn App.LoggedIn
