@@ -1,7 +1,6 @@
 port module App.Update exposing (Msg(..), init, update, updateWithStorage)
 
 import App.Model exposing (AppModel, initialModel)
-import Facebook.Port as Facebook
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
 import User.Decoder exposing (loginStatusDecoder, modelToValue, userTypeDecoder)
@@ -45,10 +44,16 @@ init savedModel =
 
 
 
--- PORT
+-- PORTS
 
 
 port setStorage : Encode.Value -> Cmd msg
+
+
+port login : {} -> Cmd msg
+
+
+port logout : {} -> Cmd msg
 
 
 
@@ -97,14 +102,14 @@ update msg model =
                 _ =
                     Debug.log "update Login " Login
             in
-            ( model, Facebook.login {} )
+            ( model, login {} )
 
         Logout ->
             let
                 _ =
                     Debug.log "update Login " Login
             in
-            ( model, Facebook.logout {} )
+            ( model, logout {} )
 
         _ ->
             ( model, Cmd.none )
