@@ -1,22 +1,51 @@
-port module App exposing (AppModel, Msg(..), init, initialModel, update, updateWithStorage, view)
+port module App exposing (Model, Msg(..), init, initialModel, update, updateWithStorage, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Json.Decode as Decode exposing (..)
-import Json.Encode as Encode exposing (..)
-import User
+import Json.Decode as D exposing (..)
+import Json.Encode as E exposing (..)
 
 
-type alias AppModel =
-    { userModel : User.Model
+type alias Model =
+    { uid : String
+    , name : String
+    , url : String
+    , loginStatus : LoginStatus
+    , userType : UserType
     }
 
 
-initialModel : AppModel
+initialModel : Model
 initialModel =
-    { userModel = User.initialUser
+    initialUser
+
+
+initialUser : Model
+initialUser =
+    { uid = ""
+    , name = ""
+    , url = ""
+    , loginStatus = UnAuthorised
+    , userType = Unknown
     }
+
+
+type UserType
+    = Unknown
+    | Client
+    | Vendor
+    | Runner
+
+
+
+-- I guess it doesn't matter if you think of all edge cases first with your types. Elm makes it easier to add to them as you go along
+
+
+type LoginStatus
+    = Connected
+    | UnAuthorised
+    | Disconnected
 
 
 
@@ -29,14 +58,13 @@ type Msg
     | Logout
     | LoggedIn String
     | LoggedOut String
-    | UserMsg User.Msg
 
 
 
 -- INIT
 
 
-init : Maybe Encode.Value -> ( AppModel, Cmd Msg )
+init : Maybe E.Value -> ( Model, Cmd Msg )
 init savedModel =
     case savedModel of
         Just value ->
@@ -44,7 +72,7 @@ init savedModel =
                 _ =
                     Debug.log "init value " value
             in
-            ( Maybe.withDefault initialModel (Decode.decodeValue modelDecoder value |> resultToMaybe)
+            ( Maybe.withDefault initialModel (D.decodeValue modelDecoder value |> resultToMaybe)
             , Cmd.none
             )
 
@@ -58,7 +86,7 @@ init savedModel =
 -- PORTS
 
 
-port setStorage : Encode.Value -> Cmd msg
+port setStorage : E.Value -> Cmd msg
 
 
 port login : {} -> Cmd msg
@@ -71,7 +99,7 @@ port logout : {} -> Cmd msg
 -- UPDATE
 
 
-updateWithStorage : Msg -> AppModel -> ( AppModel, Cmd Msg )
+updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
 updateWithStorage msg model =
     let
         ( newModel, cmds ) =
@@ -81,32 +109,48 @@ updateWithStorage msg model =
             Debug.log "updateWithStorage " msg
     in
     ( newModel
-    , Cmd.batch [ setStorage (User.modelToValue newModel.userModel), cmds ]
+    , Cmd.batch [ setStorage (modelToValue newModel), cmds ]
     )
 
 
-update : Msg -> AppModel -> ( AppModel, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoggedIn json ->
             let
                 ( updatedUserModel, userCmd ) =
-                    User.update (User.UserLoggedIn json) model.userModel
+                    case decodeString userDecoder json of
+                        Ok userData ->
+                            let
+                                newModel =
+                                    { uid = userData.uid
+                                    , name = userData.name
+                                    , url = userData.url
+                                    , loginStatus = Connected
+                                    , userType = Unknown
+                                    }
+                            in
+                            ( newModel
+                            , Cmd.none
+                            )
+
+                        Err error ->
+                            ( model, Cmd.none )
 
                 _ =
                     Debug.log "update LoggedIn " json
             in
-            ( { model | userModel = updatedUserModel }, Cmd.map UserMsg userCmd )
+            ( updatedUserModel, userCmd )
 
         LoggedOut loggedOutMsg ->
             let
                 ( updatedUserModel, userCmd ) =
-                    User.update (User.UserLoggedOut loggedOutMsg) model.userModel
+                    ( initialUser, Cmd.none )
 
                 _ =
                     Debug.log "update LoggedOut " loggedOutMsg
             in
-            ( { model | userModel = updatedUserModel }, Cmd.none )
+            ( updatedUserModel, Cmd.none )
 
         Login ->
             let
@@ -131,14 +175,14 @@ update msg model =
 -- Decode the saved model from localstorage
 
 
-modelDecoder : Decode.Decoder AppModel
+modelDecoder : D.Decoder Model
 modelDecoder =
-    Decode.map5 modelConstructor
-        (field "uid" Decode.string)
-        (field "name" Decode.string)
-        (field "url" Decode.string)
-        (field "loginStatus" Decode.string |> andThen User.loginStatusDecoder)
-        (field "userType" Decode.string |> andThen User.userTypeDecoder)
+    D.map5 modelConstructor
+        (field "uid" D.string)
+        (field "name" D.string)
+        (field "url" D.string)
+        (field "loginStatus" D.string |> andThen loginStatusDecoder)
+        (field "userType" D.string |> andThen userTypeDecoder)
 
 
 
@@ -146,22 +190,21 @@ modelDecoder =
 -- helper to construct model from the decoded object
 
 
-modelConstructor : String -> String -> String -> User.LoginStatus -> User.UserType -> AppModel
+modelConstructor : String -> String -> String -> LoginStatus -> UserType -> Model
 modelConstructor uid name picture status userType =
-    AppModel
-        { uid = uid
-        , name = name
-        , url = picture
-        , loginStatus = status
-        , userType = userType
-        }
+    { uid = uid
+    , name = name
+    , url = picture
+    , loginStatus = status
+    , userType = userType
+    }
 
 
 
 -- Maybe object helper
 
 
-resultToMaybe : Result Error AppModel -> Maybe AppModel
+resultToMaybe : Result Error Model -> Maybe Model
 resultToMaybe result =
     case result of
         Result.Ok model ->
@@ -171,18 +214,18 @@ resultToMaybe result =
             Nothing
 
 
-view : AppModel -> Html Msg
+view : Model -> Html Msg
 view app =
-    case app.userModel.loginStatus of
-        User.Connected ->
+    case app.loginStatus of
+        Connected ->
             div []
-                [ div [] [ text app.userModel.name ]
-                , loggedInHtml app.userModel.url
+                [ div [] [ text app.name ]
+                , loggedInHtml app.url
                 ]
 
         _ ->
             div []
-                [ div [] [ text app.userModel.name ]
+                [ div [] [ text app.name ]
                 , loggedOutHtml
                 ]
 
@@ -198,3 +241,117 @@ loggedInHtml pic =
 loggedOutHtml : Html Msg
 loggedOutHtml =
     button [ onClick Login ] [ text "Login" ]
+
+
+
+-- a function to create a new user model
+
+
+newUser : String -> String -> String -> Model
+newUser uid name picture =
+    { uid = uid
+    , name = name
+    , url = picture
+    , loginStatus = Connected
+    , userType = Client
+    }
+
+
+
+-- DECODERS
+
+
+userDecoder : Decoder Model
+userDecoder =
+    map3 newUser
+        (field "id" D.string)
+        (field "name" D.string)
+        (field "picture" <| (field "data" <| field "url" D.string))
+
+
+setName : String -> Model -> Model
+setName newName user =
+    { user | name = newName }
+
+
+loginStatusDecoder : String -> D.Decoder LoginStatus
+loginStatusDecoder status =
+    let
+        _ =
+            Debug.log "loginStatusDecoder " status
+    in
+    case status of
+        "Connected" ->
+            D.succeed Connected
+
+        "UnAuthorised" ->
+            D.succeed UnAuthorised
+
+        "Disconnected" ->
+            D.succeed Disconnected
+
+        _ ->
+            D.fail (status ++ " is not a recognized tag for login status")
+
+
+userTypeDecoder : String -> D.Decoder UserType
+userTypeDecoder userType =
+    case userType of
+        "Unknown" ->
+            D.succeed Unknown
+
+        "Client" ->
+            D.succeed Client
+
+        "Vendor" ->
+            D.succeed Vendor
+
+        "Runner" ->
+            D.succeed Runner
+
+        _ ->
+            D.fail (userType ++ " is not a recognized tag for user type")
+
+
+
+-- ENCODERS
+
+
+modelToValue : Model -> E.Value
+modelToValue model =
+    E.object
+        [ ( "uid", E.string model.uid )
+        , ( "name", E.string model.name )
+        , ( "url", E.string model.url )
+        , ( "loginStatus", loginStatusToValue model.loginStatus )
+        , ( "userType", userTypeToValue model.userType )
+        ]
+
+
+loginStatusToValue : LoginStatus -> E.Value
+loginStatusToValue status =
+    case status of
+        Connected ->
+            E.string "Connected"
+
+        UnAuthorised ->
+            E.string "UnAuthorised"
+
+        Disconnected ->
+            E.string "Disconnected"
+
+
+userTypeToValue : UserType -> E.Value
+userTypeToValue userType =
+    case userType of
+        Unknown ->
+            E.string "Unknown"
+
+        Client ->
+            E.string "Client"
+
+        Vendor ->
+            E.string "Vendor"
+
+        Runner ->
+            E.string "Runner"

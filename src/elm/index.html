@@ -5159,52 +5159,48 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$element = _Browser_element;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$User$UnAuthorised = {$: 'UnAuthorised'};
-var $author$project$User$Unknown = {$: 'Unknown'};
-var $author$project$User$initialUser = {loginStatus: $author$project$User$UnAuthorised, name: '', uid: '', url: '', userType: $author$project$User$Unknown};
-var $author$project$App$initialModel = {userModel: $author$project$User$initialUser};
+var $author$project$App$UnAuthorised = {$: 'UnAuthorised'};
+var $author$project$App$Unknown = {$: 'Unknown'};
+var $author$project$App$initialUser = {loginStatus: $author$project$App$UnAuthorised, name: '', uid: '', url: '', userType: $author$project$App$Unknown};
+var $author$project$App$initialModel = $author$project$App$initialUser;
 var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$User$Connected = {$: 'Connected'};
-var $author$project$User$Disconnected = {$: 'Disconnected'};
+var $author$project$App$Connected = {$: 'Connected'};
+var $author$project$App$Disconnected = {$: 'Disconnected'};
 var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$User$loginStatusDecoder = function (status) {
+var $author$project$App$loginStatusDecoder = function (status) {
 	var _v0 = A2($elm$core$Debug$log, 'loginStatusDecoder ', status);
 	switch (status) {
 		case 'Connected':
-			return $elm$json$Json$Decode$succeed($author$project$User$Connected);
+			return $elm$json$Json$Decode$succeed($author$project$App$Connected);
 		case 'UnAuthorised':
-			return $elm$json$Json$Decode$succeed($author$project$User$UnAuthorised);
+			return $elm$json$Json$Decode$succeed($author$project$App$UnAuthorised);
 		case 'Disconnected':
-			return $elm$json$Json$Decode$succeed($author$project$User$Disconnected);
+			return $elm$json$Json$Decode$succeed($author$project$App$Disconnected);
 		default:
 			return $elm$json$Json$Decode$fail(status + ' is not a recognized tag for login status');
 	}
 };
 var $elm$json$Json$Decode$map5 = _Json_map5;
-var $author$project$App$AppModel = function (userModel) {
-	return {userModel: userModel};
-};
 var $author$project$App$modelConstructor = F5(
 	function (uid, name, picture, status, userType) {
-		return $author$project$App$AppModel(
-			{loginStatus: status, name: name, uid: uid, url: picture, userType: userType});
+		return {loginStatus: status, name: name, uid: uid, url: picture, userType: userType};
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$User$Client = {$: 'Client'};
-var $author$project$User$Runner = {$: 'Runner'};
-var $author$project$User$Vendor = {$: 'Vendor'};
-var $author$project$User$userTypeDecoder = function (userType) {
+var $author$project$App$Client = {$: 'Client'};
+var $author$project$App$Runner = {$: 'Runner'};
+var $author$project$App$Vendor = {$: 'Vendor'};
+var $author$project$App$userTypeDecoder = function (userType) {
 	switch (userType) {
 		case 'Unknown':
-			return $elm$json$Json$Decode$succeed($author$project$User$Unknown);
+			return $elm$json$Json$Decode$succeed($author$project$App$Unknown);
 		case 'Client':
-			return $elm$json$Json$Decode$succeed($author$project$User$Client);
+			return $elm$json$Json$Decode$succeed($author$project$App$Client);
 		case 'Vendor':
-			return $elm$json$Json$Decode$succeed($author$project$User$Vendor);
+			return $elm$json$Json$Decode$succeed($author$project$App$Vendor);
 		case 'Runner':
-			return $elm$json$Json$Decode$succeed($author$project$User$Runner);
+			return $elm$json$Json$Decode$succeed($author$project$App$Runner);
 		default:
 			return $elm$json$Json$Decode$fail(userType + ' is not a recognized tag for user type');
 	}
@@ -5217,11 +5213,11 @@ var $author$project$App$modelDecoder = A6(
 	A2($elm$json$Json$Decode$field, 'url', $elm$json$Json$Decode$string),
 	A2(
 		$elm$json$Json$Decode$andThen,
-		$author$project$User$loginStatusDecoder,
+		$author$project$App$loginStatusDecoder,
 		A2($elm$json$Json$Decode$field, 'loginStatus', $elm$json$Json$Decode$string)),
 	A2(
 		$elm$json$Json$Decode$andThen,
-		$author$project$User$userTypeDecoder,
+		$author$project$App$userTypeDecoder,
 		A2($elm$json$Json$Decode$field, 'userType', $elm$json$Json$Decode$string)));
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -5278,7 +5274,7 @@ var $author$project$Main$subscriptions = function (model) {
 			]));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$User$loginStatusToValue = function (status) {
+var $author$project$App$loginStatusToValue = function (status) {
 	switch (status.$) {
 		case 'Connected':
 			return $elm$json$Json$Encode$string('Connected');
@@ -5301,7 +5297,7 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var $author$project$User$userTypeToValue = function (userType) {
+var $author$project$App$userTypeToValue = function (userType) {
 	switch (userType.$) {
 		case 'Unknown':
 			return $elm$json$Json$Encode$string('Unknown');
@@ -5313,7 +5309,7 @@ var $author$project$User$userTypeToValue = function (userType) {
 			return $elm$json$Json$Encode$string('Runner');
 	}
 };
-var $author$project$User$modelToValue = function (model) {
+var $author$project$App$modelToValue = function (model) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
@@ -5328,23 +5324,15 @@ var $author$project$User$modelToValue = function (model) {
 				$elm$json$Json$Encode$string(model.url)),
 				_Utils_Tuple2(
 				'loginStatus',
-				$author$project$User$loginStatusToValue(model.loginStatus)),
+				$author$project$App$loginStatusToValue(model.loginStatus)),
 				_Utils_Tuple2(
 				'userType',
-				$author$project$User$userTypeToValue(model.userType))
+				$author$project$App$userTypeToValue(model.userType))
 			]));
 };
 var $author$project$App$setStorage = _Platform_outgoingPort('setStorage', $elm$core$Basics$identity);
 var $author$project$App$Login = {$: 'Login'};
-var $author$project$User$UserLoggedIn = function (a) {
-	return {$: 'UserLoggedIn', a: a};
-};
-var $author$project$User$UserLoggedOut = function (a) {
-	return {$: 'UserLoggedOut', a: a};
-};
-var $author$project$App$UserMsg = function (a) {
-	return {$: 'UserMsg', a: a};
-};
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$App$login = _Platform_outgoingPort(
 	'login',
 	function ($) {
@@ -5355,16 +5343,14 @@ var $author$project$App$logout = _Platform_outgoingPort(
 	function ($) {
 		return $elm$json$Json$Encode$object(_List_Nil);
 	});
-var $elm$core$Platform$Cmd$map = _Platform_map;
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$json$Json$Decode$map3 = _Json_map3;
-var $author$project$User$newUser = F3(
+var $author$project$App$newUser = F3(
 	function (uid, name, picture) {
-		return {loginStatus: $author$project$User$Connected, name: name, uid: uid, url: picture, userType: $author$project$User$Client};
+		return {loginStatus: $author$project$App$Connected, name: name, uid: uid, url: picture, userType: $author$project$App$Client};
 	});
-var $author$project$User$userDecoder = A4(
+var $author$project$App$userDecoder = A4(
 	$elm$json$Json$Decode$map3,
-	$author$project$User$newUser,
+	$author$project$App$newUser,
 	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
 	A2(
@@ -5374,71 +5360,41 @@ var $author$project$User$userDecoder = A4(
 			$elm$json$Json$Decode$field,
 			'data',
 			A2($elm$json$Json$Decode$field, 'url', $elm$json$Json$Decode$string))));
-var $author$project$User$update = F2(
-	function (msg, model) {
-		if (msg.$ === 'UserLoggedIn') {
-			var json = msg.a;
-			var _v1 = A2(
-				$elm$core$Debug$log,
-				'update UserLoggedIn ',
-				A2($elm$json$Json$Decode$decodeString, $author$project$User$userDecoder, json));
-			var _v2 = A2($elm$json$Json$Decode$decodeString, $author$project$User$userDecoder, json);
-			if (_v2.$ === 'Ok') {
-				var userData = _v2.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{loginStatus: $author$project$User$Connected, name: userData.name, uid: userData.uid, url: userData.url}),
-					$elm$core$Platform$Cmd$none);
-			} else {
-				var error = _v2.a;
-				var _v3 = A2($elm$core$Debug$log, 'error', error);
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			}
-		} else {
-			var loggedOut = msg.a;
-			return _Utils_Tuple2($author$project$User$initialUser, $elm$core$Platform$Cmd$none);
-		}
-	});
 var $author$project$App$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'LoggedIn':
 				var json = msg.a;
-				var _v1 = A2(
-					$author$project$User$update,
-					$author$project$User$UserLoggedIn(json),
-					model.userModel);
+				var _v1 = function () {
+					var _v2 = A2($elm$json$Json$Decode$decodeString, $author$project$App$userDecoder, json);
+					if (_v2.$ === 'Ok') {
+						var userData = _v2.a;
+						var newModel = {loginStatus: $author$project$App$Connected, name: userData.name, uid: userData.uid, url: userData.url, userType: $author$project$App$Unknown};
+						return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
+					} else {
+						var error = _v2.a;
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					}
+				}();
 				var updatedUserModel = _v1.a;
 				var userCmd = _v1.b;
-				var _v2 = A2($elm$core$Debug$log, 'update LoggedIn ', json);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{userModel: updatedUserModel}),
-					A2($elm$core$Platform$Cmd$map, $author$project$App$UserMsg, userCmd));
+				var _v3 = A2($elm$core$Debug$log, 'update LoggedIn ', json);
+				return _Utils_Tuple2(updatedUserModel, userCmd);
 			case 'LoggedOut':
 				var loggedOutMsg = msg.a;
-				var _v3 = A2(
-					$author$project$User$update,
-					$author$project$User$UserLoggedOut(loggedOutMsg),
-					model.userModel);
-				var updatedUserModel = _v3.a;
-				var userCmd = _v3.b;
-				var _v4 = A2($elm$core$Debug$log, 'update LoggedOut ', loggedOutMsg);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{userModel: updatedUserModel}),
-					$elm$core$Platform$Cmd$none);
+				var _v4 = _Utils_Tuple2($author$project$App$initialUser, $elm$core$Platform$Cmd$none);
+				var updatedUserModel = _v4.a;
+				var userCmd = _v4.b;
+				var _v5 = A2($elm$core$Debug$log, 'update LoggedOut ', loggedOutMsg);
+				return _Utils_Tuple2(updatedUserModel, $elm$core$Platform$Cmd$none);
 			case 'Login':
-				var _v5 = A2($elm$core$Debug$log, 'update Login ', $author$project$App$Login);
+				var _v6 = A2($elm$core$Debug$log, 'update Login ', $author$project$App$Login);
 				return _Utils_Tuple2(
 					model,
 					$author$project$App$login(
 						{}));
 			case 'Logout':
-				var _v6 = A2($elm$core$Debug$log, 'update Login ', $author$project$App$Login);
+				var _v7 = A2($elm$core$Debug$log, 'update Login ', $author$project$App$Login);
 				return _Utils_Tuple2(
 					model,
 					$author$project$App$logout(
@@ -5459,7 +5415,7 @@ var $author$project$App$updateWithStorage = F2(
 				_List_fromArray(
 					[
 						$author$project$App$setStorage(
-						$author$project$User$modelToValue(newModel.userModel)),
+						$author$project$App$modelToValue(newModel)),
 						cmds
 					])));
 	});
@@ -5536,7 +5492,7 @@ var $author$project$App$loggedOutHtml = A2(
 			$elm$html$Html$text('Login')
 		]));
 var $author$project$App$view = function (app) {
-	var _v0 = app.userModel.loginStatus;
+	var _v0 = app.loginStatus;
 	if (_v0.$ === 'Connected') {
 		return A2(
 			$elm$html$Html$div,
@@ -5548,9 +5504,9 @@ var $author$project$App$view = function (app) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text(app.userModel.name)
+							$elm$html$Html$text(app.name)
 						])),
-					$author$project$App$loggedInHtml(app.userModel.url)
+					$author$project$App$loggedInHtml(app.url)
 				]));
 	} else {
 		return A2(
@@ -5563,7 +5519,7 @@ var $author$project$App$view = function (app) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text(app.userModel.name)
+							$elm$html$Html$text(app.name)
 						])),
 					$author$project$App$loggedOutHtml
 				]));

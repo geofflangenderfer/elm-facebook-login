@@ -11,7 +11,7 @@ import Json.Encode as Encode exposing (Value)
 --
 
 
-main : Program (Maybe Encode.Value) App.AppModel App.Msg
+main : Program (Maybe Encode.Value) App.Model App.Msg
 main =
     Browser.element
         { init = App.init
@@ -27,7 +27,7 @@ main =
 -- this is because the port subscriptions have a function as first parameter. this means incoming data from js
 
 
-subscriptions : App.AppModel -> Sub App.Msg
+subscriptions : App.Model -> Sub App.Msg
 subscriptions model =
     Sub.batch
         [ userLoggedIn App.LoggedIn
