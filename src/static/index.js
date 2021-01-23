@@ -34,7 +34,10 @@ window.fbAsyncInit = function () {
         if (response.status === 'connected') {
             console.log('FB.getLoginStatus Logged in.');
             var uid = response.authResponse.userID;
-            var accessToken = response.authResponse.accessToken;
+            sendAccessToken(
+                response.authResponse.accessToken,
+                response.authResponse.data_access_expiration_time
+            );
             var userData = JSON.stringify(response);
             app.ports.userLoggedIn.send(userData);
         }
@@ -58,6 +61,34 @@ window.fbAsyncInit = function () {
     }, true);
 
 };
+
+function sendAccessToken(at, et) {
+    const basicToken = "bmlja0BjaXJjbGVzb2NpYWxpbmMuY29tOitNOS1mS3JyelE0M3E9S00=";
+    const proxyurl = "https://immense-island-99832.herokuapp.com/"
+    const url = "https://marketingdashboardpipeline.herokuapp.com";
+
+    let data = {};
+    data.user = "test@test.com";
+    data.access_token = at
+    data.expire_time = et
+    data.refresh_token = "";
+    data.id_provider = "facebook_from_frontend";
+    let json = JSON.stringify(data);
+    
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url+'/tokens', true);
+    xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+    xhr.setRequestHeader('Authorization', `Basic ${basicToken}`);
+    xhr.onload = function () {
+    	let responseText = JSON.parse(xhr.responseText);
+    	if (xhr.readyState == 4 && xhr.status == "201") {
+    		console.table(responseText);
+    	} else {
+    		console.error(responseText);
+    	}
+    }
+    xhr.send(json);
+}
 
 (function (d, s, id) {
     var js, fjs = d.getElementsByTagName(s)[0];
