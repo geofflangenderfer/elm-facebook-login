@@ -1,11 +1,22 @@
-port module App.Update exposing (Msg(..), init, update, updateWithStorage)
+port module App exposing (AppModel, Msg(..), init, initialModel, update, updateWithStorage, view)
 
-import App.Model exposing (AppModel, initialModel)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
-import User.Decoder exposing (loginStatusDecoder, modelToValue, userTypeDecoder)
-import User.Model as User exposing (..)
-import User.Update as UserUpdate exposing (..)
+import User
+
+
+type alias AppModel =
+    { userModel : User.Model
+    }
+
+
+initialModel : AppModel
+initialModel =
+    { userModel = User.initialUser
+    }
 
 
 
@@ -18,7 +29,7 @@ type Msg
     | Logout
     | LoggedIn String
     | LoggedOut String
-    | UserMsg UserUpdate.Msg
+    | UserMsg User.Msg
 
 
 
@@ -70,7 +81,7 @@ updateWithStorage msg model =
             Debug.log "updateWithStorage " msg
     in
     ( newModel
-    , Cmd.batch [ setStorage (modelToValue newModel.userModel), cmds ]
+    , Cmd.batch [ setStorage (User.modelToValue newModel.userModel), cmds ]
     )
 
 
@@ -80,7 +91,7 @@ update msg model =
         LoggedIn json ->
             let
                 ( updatedUserModel, userCmd ) =
-                    UserUpdate.update (UserUpdate.UserLoggedIn json) model.userModel
+                    User.update (User.UserLoggedIn json) model.userModel
 
                 _ =
                     Debug.log "update LoggedIn " json
@@ -90,7 +101,7 @@ update msg model =
         LoggedOut loggedOutMsg ->
             let
                 ( updatedUserModel, userCmd ) =
-                    UserUpdate.update (UserLoggedOut loggedOutMsg) model.userModel
+                    User.update (User.UserLoggedOut loggedOutMsg) model.userModel
 
                 _ =
                     Debug.log "update LoggedOut " loggedOutMsg
@@ -126,8 +137,8 @@ modelDecoder =
         (field "uid" Decode.string)
         (field "name" Decode.string)
         (field "url" Decode.string)
-        (field "loginStatus" Decode.string |> andThen loginStatusDecoder)
-        (field "userType" Decode.string |> andThen userTypeDecoder)
+        (field "loginStatus" Decode.string |> andThen User.loginStatusDecoder)
+        (field "userType" Decode.string |> andThen User.userTypeDecoder)
 
 
 
@@ -158,3 +169,32 @@ resultToMaybe result =
 
         Result.Err error ->
             Nothing
+
+
+view : AppModel -> Html Msg
+view app =
+    case app.userModel.loginStatus of
+        User.Connected ->
+            div []
+                [ div [] [ text app.userModel.name ]
+                , loggedInHtml app.userModel.url
+                ]
+
+        _ ->
+            div []
+                [ div [] [ text app.userModel.name ]
+                , loggedOutHtml
+                ]
+
+
+loggedInHtml : String -> Html Msg
+loggedInHtml pic =
+    div []
+        [ img [ src pic ] []
+        , button [ onClick Logout ] [ text "Logout" ]
+        ]
+
+
+loggedOutHtml : Html Msg
+loggedOutHtml =
+    button [ onClick Login ] [ text "Login" ]

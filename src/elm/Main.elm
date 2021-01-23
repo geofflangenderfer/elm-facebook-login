@@ -1,11 +1,6 @@
--- means this file contains ports
-
-
 port module Main exposing (..)
 
-import App.Model exposing (AppModel)
-import App.Update as Update exposing (Msg, init, update, updateWithStorage)
-import App.View exposing (view)
+import App exposing (AppModel, view)
 import Browser
 import Json.Encode as Encode exposing (Value)
 
@@ -16,12 +11,12 @@ import Json.Encode as Encode exposing (Value)
 --
 
 
-main : Program (Maybe Encode.Value) AppModel Update.Msg
+main : Program (Maybe Encode.Value) AppModel App.Msg
 main =
     Browser.element
-        { init = init
+        { init = App.init
         , view = view
-        , update = updateWithStorage
+        , update = App.updateWithStorage
         , subscriptions = subscriptions
         }
 
@@ -32,11 +27,11 @@ main =
 -- this is because the port subscriptions have a function as first parameter. this means incoming data from js
 
 
-subscriptions : AppModel -> Sub Update.Msg
+subscriptions : AppModel -> Sub App.Msg
 subscriptions model =
     Sub.batch
-        [ userLoggedIn Update.LoggedIn
-        , userLoggedOut Update.LoggedOut
+        [ userLoggedIn App.LoggedIn
+        , userLoggedOut App.LoggedOut
         ]
 
 
