@@ -51,7 +51,6 @@ type alias Model =
     , name : String
     , url : String
     , loginStatus : LoginStatus
-    , userType : UserType
     }
 
 
@@ -85,15 +84,7 @@ initialUser =
     , name = ""
     , url = ""
     , loginStatus = UnAuthorised
-    , userType = Unknown
     }
-
-
-type UserType
-    = Unknown
-    | Client
-    | Vendor
-    | Runner
 
 
 
@@ -164,7 +155,6 @@ update msg model =
                                     , name = userData.name
                                     , url = userData.url
                                     , loginStatus = Connected
-                                    , userType = Unknown
                                     }
                             in
                             ( newModel
@@ -214,12 +204,11 @@ update msg model =
 
 modelDecoder : D.Decoder Model
 modelDecoder =
-    D.map5 modelConstructor
+    D.map4 modelConstructor
         (field "uid" D.string)
         (field "name" D.string)
         (field "url" D.string)
         (field "loginStatus" D.string |> andThen loginStatusDecoder)
-        (field "userType" D.string |> andThen userTypeDecoder)
 
 
 
@@ -227,13 +216,12 @@ modelDecoder =
 -- helper to construct model from the decoded object
 
 
-modelConstructor : String -> String -> String -> LoginStatus -> UserType -> Model
-modelConstructor uid name picture status userType =
+modelConstructor : String -> String -> String -> LoginStatus -> Model
+modelConstructor uid name picture status =
     { uid = uid
     , name = name
     , url = picture
     , loginStatus = status
-    , userType = userType
     }
 
 
@@ -290,7 +278,6 @@ newUser uid name picture =
     , name = name
     , url = picture
     , loginStatus = Connected
-    , userType = Client
     }
 
 
@@ -331,25 +318,6 @@ loginStatusDecoder status =
             D.fail (status ++ " is not a recognized tag for login status")
 
 
-userTypeDecoder : String -> D.Decoder UserType
-userTypeDecoder userType =
-    case userType of
-        "Unknown" ->
-            D.succeed Unknown
-
-        "Client" ->
-            D.succeed Client
-
-        "Vendor" ->
-            D.succeed Vendor
-
-        "Runner" ->
-            D.succeed Runner
-
-        _ ->
-            D.fail (userType ++ " is not a recognized tag for user type")
-
-
 
 -- ENCODERS
 
@@ -361,7 +329,6 @@ modelToValue model =
         , ( "name", E.string model.name )
         , ( "url", E.string model.url )
         , ( "loginStatus", loginStatusToValue model.loginStatus )
-        , ( "userType", userTypeToValue model.userType )
         ]
 
 
@@ -376,19 +343,3 @@ loginStatusToValue status =
 
         Disconnected ->
             E.string "Disconnected"
-
-
-userTypeToValue : UserType -> E.Value
-userTypeToValue userType =
-    case userType of
-        Unknown ->
-            E.string "Unknown"
-
-        Client ->
-            E.string "Client"
-
-        Vendor ->
-            E.string "Vendor"
-
-        Runner ->
-            E.string "Runner"
