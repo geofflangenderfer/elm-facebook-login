@@ -1,7 +1,2 @@
 elm-stuff/
 node_modules/
-tmp/
-dist/
-bash.exe.stackdump
-npm-debug.log
-errors.txtsrc/static/styles/

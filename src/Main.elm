@@ -8,49 +8,34 @@ import Json.Decode as D exposing (..)
 import Json.Encode as E exposing (..)
 
 
-
--- MAIN
--- it may receive a js value from init or not
---
-
-
-main : Program (Maybe E.Value) Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = updateWithStorage
-        , subscriptions = subscriptions
-        }
-
-
-
--- INIT
-
-
-init : Maybe E.Value -> ( Model, Cmd Msg )
-init savedModel =
-    case savedModel of
-        Just value ->
-            let
-                _ =
-                    Debug.log "init value " value
-            in
-            ( Maybe.withDefault initialModel (D.decodeValue modelDecoder value |> resultToMaybe)
-            , Cmd.none
-            )
-
-        _ ->
-            ( initialModel
-            , Cmd.none
-            )
-
-
 type alias Model =
     { uid : String
     , name : String
     , url : String
     , loginStatus : LoginStatus
+    }
+
+
+type LoginStatus
+    = Connected
+    | UnAuthorised
+    | Disconnected
+
+
+type Msg
+    = NoOp
+    | Login
+    | Logout
+    | LoggedIn String
+    | LoggedOut String
+
+
+initialUser : Model
+initialUser =
+    { uid = ""
+    , name = ""
+    , url = ""
+    , loginStatus = UnAuthorised
     }
 
 
@@ -73,46 +58,8 @@ port login : {} -> Cmd msg
 port logout : {} -> Cmd msg
 
 
-initialModel : Model
-initialModel =
-    initialUser
-
-
-initialUser : Model
-initialUser =
-    { uid = ""
-    , name = ""
-    , url = ""
-    , loginStatus = UnAuthorised
-    }
-
-
-
--- I guess it doesn't matter if you think of all edge cases first with your types. Elm makes it easier to add to them as you go along
-
-
-type LoginStatus
-    = Connected
-    | UnAuthorised
-    | Disconnected
-
-
-
--- MESSAGE
-
-
-type Msg
-    = NoOp
-    | Login
-    | Logout
-    | LoggedIn String
-    | LoggedOut String
-
-
 
 -- SUBSCRIPTIONS
--- creates event listener that receives info from javascript
--- this is because the port subscriptions have a function as first parameter. this means incoming data from js
 
 
 subscriptions : Model -> Sub Msg
@@ -197,48 +144,6 @@ update msg model =
             ( model, Cmd.none )
 
 
-
--- DECODER
--- Decode the saved model from localstorage
-
-
-modelDecoder : D.Decoder Model
-modelDecoder =
-    D.map4 modelConstructor
-        (field "uid" D.string)
-        (field "name" D.string)
-        (field "url" D.string)
-        (field "loginStatus" D.string |> andThen loginStatusDecoder)
-
-
-
--- HELPERS
--- helper to construct model from the decoded object
-
-
-modelConstructor : String -> String -> String -> LoginStatus -> Model
-modelConstructor uid name picture status =
-    { uid = uid
-    , name = name
-    , url = picture
-    , loginStatus = status
-    }
-
-
-
--- Maybe object helper
-
-
-resultToMaybe : Result Error Model -> Maybe Model
-resultToMaybe result =
-    case result of
-        Result.Ok model ->
-            Just model
-
-        Result.Err error ->
-            Nothing
-
-
 view : Model -> Html Msg
 view app =
     case app.loginStatus of
@@ -269,7 +174,27 @@ loggedOutHtml =
 
 
 
--- a function to create a new user model
+-- HELPERS
+-- helper to construct model from the decoded object
+
+
+modelConstructor : String -> String -> String -> LoginStatus -> Model
+modelConstructor uid name picture status =
+    { uid = uid
+    , name = name
+    , url = picture
+    , loginStatus = status
+    }
+
+
+resultToMaybe : Result Error Model -> Maybe Model
+resultToMaybe result =
+    case result of
+        Result.Ok model ->
+            Just model
+
+        Result.Err error ->
+            Nothing
 
 
 newUser : String -> String -> String -> Model
@@ -283,6 +208,15 @@ newUser uid name picture =
 
 
 -- DECODERS
+
+
+modelDecoder : D.Decoder Model
+modelDecoder =
+    D.map4 modelConstructor
+        (field "uid" D.string)
+        (field "name" D.string)
+        (field "url" D.string)
+        (field "loginStatus" D.string |> andThen loginStatusDecoder)
 
 
 userDecoder : Decoder Model
@@ -343,3 +277,31 @@ loginStatusToValue status =
 
         Disconnected ->
             E.string "Disconnected"
+
+
+main : Program (Maybe E.Value) Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = updateWithStorage
+        , subscriptions = subscriptions
+        }
+
+
+init : Maybe E.Value -> ( Model, Cmd Msg )
+init savedModel =
+    case savedModel of
+        Just value ->
+            let
+                _ =
+                    Debug.log "init value " value
+            in
+            ( Maybe.withDefault initialUser (D.decodeValue modelDecoder value |> resultToMaybe)
+            , Cmd.none
+            )
+
+        _ ->
+            ( initialUser
+            , Cmd.none
+            )

@@ -5147,7 +5147,6 @@ var $elm$browser$Browser$element = _Browser_element;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Main$UnAuthorised = {$: 'UnAuthorised'};
 var $author$project$Main$initialUser = {loginStatus: $author$project$Main$UnAuthorised, name: '', uid: '', url: ''};
-var $author$project$Main$initialModel = $author$project$Main$initialUser;
 var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$field = _Json_decodeField;
@@ -5210,12 +5209,12 @@ var $author$project$Main$init = function (savedModel) {
 		return _Utils_Tuple2(
 			A2(
 				$elm$core$Maybe$withDefault,
-				$author$project$Main$initialModel,
+				$author$project$Main$initialUser,
 				$author$project$Main$resultToMaybe(
 					A2($elm$json$Json$Decode$decodeValue, $author$project$Main$modelDecoder, value))),
 			$elm$core$Platform$Cmd$none);
 	} else {
-		return _Utils_Tuple2($author$project$Main$initialModel, $elm$core$Platform$Cmd$none);
+		return _Utils_Tuple2($author$project$Main$initialUser, $elm$core$Platform$Cmd$none);
 	}
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
