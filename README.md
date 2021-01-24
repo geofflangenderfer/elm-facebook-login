@@ -14,4 +14,4 @@ then navigate to `src/static/index.html`
 
 ## Architechture
 - `src/static/facebook.js` contains all the calls to the facebook login sdk
-- `src/static/main.js` is the compiled elm code from `Main.elm`
+- `src/static/main.js` is the compiled elm code from `src/Main.elm`
