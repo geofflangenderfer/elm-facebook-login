@@ -1,5 +1,5 @@
 # Facebook Login Hello World
-- This is a minimal example for getting a user's short-lived access token through OAuth flow.
+This is a minimal example for getting a user's short-lived access token through OAuth flow:
 - You can use it to query their data from Facebook's Graph API.
 - You can exchange it for a long-lived token that lasts for 60 days.
 
